@@ -16,7 +16,7 @@ spec:
 apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
-  name: beard-tweet
+  name: beard-tweet-updater
   labels:
     commit: ${WERCKER_GIT_COMMIT}
 spec:
@@ -25,7 +25,7 @@ spec:
     spec:
       template:
         spec:
-          - name: beard-tweet
+          - name: beard-tweet-updater
             image: ${DOCKER_REPO}:${WERCKER_GIT_BRANCH}-${WERCKER_GIT_COMMIT}
             imagePullPolicy: Always
           imagePullSecrets:

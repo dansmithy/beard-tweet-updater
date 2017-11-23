@@ -4,18 +4,18 @@ box:
 dev:
   steps:
     - wercker/setup-go-workspace:
-        package-dir: github.com/dansmithy/beard-tweet
+        package-dir: github.com/dansmithy/beard-tweet-updater
     - script:
         code: |
           go get ./...
     - internal/watch:
         code: |
           go build ./...
-          ./beard-tweet
+          ./beard-tweet-updater
         reload: true
 
 build:
-  base-path: /go/src/github.com/dansmithy/beard-tweet
+  base-path: /go/src/github.com/dansmithy/beard-tweet-updater
   steps:
     - wercker/golint
     - script:
@@ -28,8 +28,8 @@ build:
             go build \
             -ldflags="-s -X main.GitCommit=$WERCKER_GIT_COMMIT -X main.PatchVersion=$(( ($(date +%s) - $(date --date=20150101 +%s) )/(60*60*24) )) -X main.Compiled=$(date +%s)" \
             -installsuffix cgo \
-            -o "$WERCKER_OUTPUT_DIR/beard-tweet"
-          cp -r "$WERCKER_OUTPUT_DIR/beard-tweet" "$WERCKER_REPORT_ARTIFACTS_DIR"
+            -o "$WERCKER_OUTPUT_DIR/beard-tweet-updater"
+          cp -r "$WERCKER_OUTPUT_DIR/beard-tweet-updater" "$WERCKER_REPORT_ARTIFACTS_DIR"
 
 build-image:
   box:
@@ -44,12 +44,12 @@ build-image:
 
     - script:
         name: prepare
-        code: mv ./beard-tweet /beard-tweet
+        code: mv ./beard-tweet-updater /beard-tweet-updater
 
     - internal/docker-push:
-        repository: wcr.io/dansmithy/beard-tweet
+        repository: wcr.io/dansmithy/beard-tweet-updater
         tag: $WERCKER_GIT_BRANCH-$WERCKER_GIT_COMMIT,$WERCKER_GIT_COMMIT,latest
-        cmd: /beard-tweet
+        cmd: /beard-tweet-updater
 
 inject-secret:
     box:
