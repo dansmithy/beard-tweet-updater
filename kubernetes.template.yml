@@ -25,9 +25,17 @@ spec:
     spec:
       template:
         spec:
+          containers:
           - name: beard-tweet-updater
             image: ${DOCKER_REPO}:${WERCKER_GIT_BRANCH}-${WERCKER_GIT_COMMIT}
             imagePullPolicy: Always
+            volumeMounts:
+            - name: beard-tweet-storage
+              mountPath: /appdata
           imagePullSecrets:
             - name: wercker    
           restartPolicy: OnFailure
+          volumes:
+          - name: beard-tweet-storage
+            persistentVolumeClaim:
+              claimName: beard-volume-claim          
