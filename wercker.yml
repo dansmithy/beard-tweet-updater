@@ -1,0 +1,50 @@
+box:
+  id: golang
+
+dev:
+  steps:
+    - wercker/setup-go-workspace:
+        package-dir: github.com/dansmithy/beard-tweet
+    - script:
+        code: |
+          go get ./...
+    - internal/watch:
+        code: |
+          go build ./...
+          ./beard-tweet
+        reload: true
+
+build:
+  base-path: /go/src/github.com/dansmithy/beard-tweet
+  steps:
+    - wercker/golint
+    - script:
+        name: go build
+        code: |
+          CGO_ENABLED=0 \
+            go build \
+            -ldflags="-s -X main.GitCommit=$WERCKER_GIT_COMMIT -X main.PatchVersion=$(( ($(date +%s) - $(date --date=20150101 +%s) )/(60*60*24) )) -X main.Compiled=$(date +%s)" \
+            -installsuffix cgo \
+            -o "$WERCKER_OUTPUT_DIR/beard-tweet"
+          cp -r "$WERCKER_OUTPUT_DIR/beard-tweet" "$WERCKER_REPORT_ARTIFACTS_DIR"
+
+build-image:
+  box:
+    id: alpine
+    cmd: /bin/sh
+  steps:
+    - script:
+        name: install apk packages
+        code: |
+          echo "@edge http://dl-cdn.alpinelinux.org/alpine/edge/main" >> /etc/apk/repositories
+          apk update && apk add ca-certificates
+
+    - script:
+        name: prepare
+        code: mv ./beard-tweet /beard-tweet
+
+    - internal/docker-push:
+        repository: wcr.io/dansmithy/beard-tweet
+        tag: $WERCKER_GIT_BRANCH-$WERCKER_GIT_COMMIT,$WERCKER_GIT_COMMIT,latest
+        cmd: /beard-tweet
+ 
