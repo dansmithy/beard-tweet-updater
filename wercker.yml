@@ -19,6 +19,9 @@ build:
   steps:
     - wercker/golint
     - script:
+        name: preserve kubernetes.template.yml
+        code: cp kubernetes.template.yml $WERCKER_OUTPUT_DIR/kubernetes.template.yml    
+    - script:
         name: go build
         code: |
           CGO_ENABLED=0 \
@@ -47,4 +50,42 @@ build-image:
         repository: wcr.io/dansmithy/beard-tweet
         tag: $WERCKER_GIT_BRANCH-$WERCKER_GIT_COMMIT,$WERCKER_GIT_COMMIT,latest
         cmd: /beard-tweet
- 
+
+inject-secret:
+    box:
+        id: alpine
+        cmd: /bin/sh
+    steps:
+
+    - kubectl:
+        name: delete secret
+        server: $KUBERNETES_MASTER
+        token: $KUBERNETES_TOKEN
+        insecure-skip-tls-verify: true
+        command: delete secret wercker; echo delete registry secret
+
+    - kubectl:
+        name: create secret
+        server: $KUBERNETES_MASTER
+        token: $KUBERNETES_TOKEN
+        insecure-skip-tls-verify: true
+        command: create secret docker-registry wercker --docker-server=$DOCKER_REGISTRY --docker-username=$DOCKER_USERNAME --docker-password=$KUBERNETES_TOKEN --docker-email=$DOCKER_EMAIL; echo create registry secret
+
+deploy-to-cluster:
+    box:
+        id: alpine
+        cmd: /bin/sh
+    steps:
+
+    - bash-template
+
+    - script:
+        name: "Visualise Kubernetes config"
+        code: cat kubernetes.yml
+
+    - kubectl:
+        name: deploy to kubernetes
+        server: $KUBERNETES_MASTER
+        token: $KUBERNETES_TOKEN
+        insecure-skip-tls-verify: true
+        command: apply -f kubernetes.yml

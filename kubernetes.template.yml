@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: beard-volume-claim
+spec:
+  storageClassName: "oci"
+  selector: 
+    matchLabels:
+      oci-availability-domain: "US-ASHBURN-AD-1"
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Gi
+---      
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: beard-tweet
+  labels:
+    commit: ${WERCKER_GIT_COMMIT}
+spec:
+  schedule: "*/1 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          - name: beard-tweet
+            image: ${DOCKER_REPO}:${WERCKER_GIT_BRANCH}-${WERCKER_GIT_COMMIT}
+            imagePullPolicy: Always
+          imagePullSecrets:
+            - name: wercker    
+          restartPolicy: OnFailure
