@@ -33,6 +33,11 @@ spec:
       containers:
       - name: beard-tweet-updater
         image: ${DOCKER_REPO}:${WERCKER_GIT_BRANCH}-${WERCKER_GIT_COMMIT}
+        env:
+        - name: TWITTER_CONSUMER_KEY
+          value: ${TWITTER_CONSUMER_KEY}
+        - name: TWITTER_CONSUMER_SECRET
+          value: ${TWITTER_CONSUMER_SECRET}
         imagePullPolicy: Always
         volumeMounts:
         - name: beard-tweet-storage
