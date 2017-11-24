@@ -36,4 +36,5 @@ func main() {
 	}
 
 	writeFile(rootDir)
+	fmt.Println("The tweet updater has run boys and girls.")
 }
