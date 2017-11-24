@@ -17,7 +17,8 @@ dev:
 build:
   base-path: /go/src/github.com/dansmithy/beard-tweet-updater
   steps:
-    - wercker/golint
+    - golint:
+        exclude: "vendor"
     - script:
         name: preserve kubernetes.template.yml
         code: cp kubernetes.template.yml $WERCKER_OUTPUT_DIR/kubernetes.template.yml    
@@ -30,7 +31,6 @@ build:
             -installsuffix cgo \
             -o "$WERCKER_OUTPUT_DIR/beard-tweet-updater"
           cp -r "$WERCKER_OUTPUT_DIR/beard-tweet-updater" "$WERCKER_REPORT_ARTIFACTS_DIR"
-
 build-image:
   box:
     id: alpine
