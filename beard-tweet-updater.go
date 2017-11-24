@@ -25,9 +25,17 @@ func latestTweet() (*twittergo.Tweet, error) {
 		resp    *twittergo.APIResponse
 		results *twittergo.SearchResults
 	)
+
+	consumerKey := os.Getenv("TWITTER_CONSUMER_KEY")
+	consumerSecret := os.Getenv("TWITTER_CONSUMER_KEY")
+
+	if consumerKey == "" || consumerSecret == "" {
+		return nil, errors.New("TWITTER_CONSUMER_KEY and/or TWITTER_CONSUMER_SECRET not set")
+	}
+
 	config := &oauth1a.ClientConfig{
-		ConsumerKey:    os.Getenv("TWITTER_CONSUMER_KEY"),
-		ConsumerSecret: os.Getenv("TWITTER_CONSUMER_SECRET"),
+		ConsumerKey:    consumerKey,
+		ConsumerSecret: consumerSecret,
 	}
 	client = twittergo.NewClient(config, nil)
 
@@ -82,7 +90,7 @@ func main() {
 	}
 
 	if err != nil {
-		fmt.Println("Had an error", err)
+		fmt.Println("Had an error:", err)
 	}
 
 }
