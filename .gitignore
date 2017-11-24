@@ -5,3 +5,4 @@ responses/
 polls/
 temp/
 beard-tweet-updater
+.envrc

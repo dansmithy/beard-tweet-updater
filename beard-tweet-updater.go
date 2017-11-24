@@ -1,31 +1,70 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"os"
 	"time"
+
+	"github.com/kurrik/oauth1a"
+	"github.com/kurrik/twittergo"
 )
 
 const defaultRootDir = "/appdata"
 
-func makeRequest(url string) ([]byte, error) {
-	fmt.Printf("Making request to: [%s]\n", url)
-	resp, err := http.Get(url)
-	if err != nil {
-		return []byte{}, err
+const twitterAppURL = "http://www.beards-and-other-facial-hair-styles.co.uk"
+
+func latestTweet() (*twittergo.Tweet, error) {
+	var (
+		err     error
+		client  *twittergo.Client
+		req     *http.Request
+		resp    *twittergo.APIResponse
+		results *twittergo.SearchResults
+	)
+	config := &oauth1a.ClientConfig{
+		ConsumerKey:    os.Getenv("TWITTER_CONSUMER_KEY"),
+		ConsumerSecret: os.Getenv("TWITTER_CONSUMER_SECRET"),
 	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	client = twittergo.NewClient(config, nil)
+
+	query := url.Values{}
+	query.Set("q", "beard")
+	query.Set("count", "1")
+	query.Set("result_type", "recent")
+	url := fmt.Sprintf("/1.1/search/tweets.json?%v", query.Encode())
+
+	req, err = http.NewRequest("GET", url, nil)
 	if err != nil {
-		return []byte{}, err
+		return nil, errors.New("could not parse request")
 	}
-	return body, nil
+
+	resp, err = client.SendRequest(req)
+	if err != nil {
+		return nil, errors.New("could not send request")
+	}
+
+	results = &twittergo.SearchResults{}
+	err = resp.Parse(results)
+	if err != nil {
+		return nil, errors.New("problem parsing response")
+	}
+
+	if len(results.Statuses()) == 0 {
+		return nil, errors.New("no matching tweets")
+	}
+	return &results.Statuses()[0], nil
 }
 
-func writeFile(rootDir string) {
+func recordExecutionTimestamp(rootDir string) {
 	ioutil.WriteFile(rootDir+"/last_run_date", []byte(time.Now().Format("2006-01-02-150405")+"\n"), 0644)
+}
+
+func recordTweet(rootDir string, tweetText string) {
+	ioutil.WriteFile(rootDir+"/last_tweet", []byte(tweetText+"\n"), 0644)
 }
 
 func main() {
@@ -35,6 +74,15 @@ func main() {
 		rootDir = os.Args[1]
 	}
 
-	writeFile(rootDir)
-	fmt.Println("The tweet updater has run boys and girls.")
+	recordExecutionTimestamp(rootDir)
+	tweet, err := latestTweet()
+
+	if tweet != nil {
+		recordTweet(rootDir, tweet.Text())
+	}
+
+	if err != nil {
+		fmt.Println("Had an error", err)
+	}
+
 }
