@@ -13,29 +13,33 @@ spec:
     requests:
       storage: 50Gi
 ---
-apiVersion: batch/v1
-kind: CronJob
+apiVersion: extensions/v1beta1
+kind: Deployment
 metadata:
   name: beard-tweet-updater
   labels:
     commit: ${WERCKER_GIT_COMMIT}
 spec:
-  schedule: "*/1 * * * *"
-  jobTemplate:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: beard-tweet-updater
+  template:
+    metadata:
+      labels:
+        app: beard-tweet-updater
+        commit: ${WERCKER_GIT_COMMIT}
     spec:
-      template:
-        spec:
-          containers:
-          - name: beard-tweet-updater
-            image: ${DOCKER_REPO}:${WERCKER_GIT_BRANCH}-${WERCKER_GIT_COMMIT}
-            imagePullPolicy: Always
-            volumeMounts:
-            - name: beard-tweet-storage
-              mountPath: /appdata
-          imagePullSecrets:
-            - name: wercker    
-          restartPolicy: OnFailure
-          volumes:
-          - name: beard-tweet-storage
-            persistentVolumeClaim:
-              claimName: beard-volume-claim          
+      containers:
+      - name: beard-tweet-updater
+        image: ${DOCKER_REPO}:${WERCKER_GIT_BRANCH}-${WERCKER_GIT_COMMIT}
+        imagePullPolicy: Always
+        volumeMounts:
+        - name: beard-tweet-storage
+          mountPath: /appdata
+      imagePullSecrets:
+        - name: wercker
+      volumes:
+        - name: beard-tweet-storage
+          persistentVolumeClaim:
+            claimName: beard-volume-claim
