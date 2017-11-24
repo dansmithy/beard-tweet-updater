@@ -27,7 +27,7 @@ func latestTweet() (*twittergo.Tweet, error) {
 	)
 
 	consumerKey := os.Getenv("TWITTER_CONSUMER_KEY")
-	consumerSecret := os.Getenv("TWITTER_CONSUMER_KEY")
+	consumerSecret := os.Getenv("TWITTER_CONSUMER_SECRET")
 
 	if consumerKey == "" || consumerSecret == "" {
 		return nil, errors.New("TWITTER_CONSUMER_KEY and/or TWITTER_CONSUMER_SECRET not set")
