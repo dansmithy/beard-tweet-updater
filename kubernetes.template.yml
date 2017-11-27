@@ -32,7 +32,7 @@ spec:
     spec:
       containers:
       - name: beard-tweet-updater
-        image: ${DOCKER_REPO}:${WERCKER_GIT_BRANCH}-${WERCKER_GIT_COMMIT}
+        image: wcr.io/dansmithy/beard-tweet-updater:${WERCKER_GIT_BRANCH}-${WERCKER_GIT_COMMIT}
         env:
         - name: TWITTER_CONSUMER_KEY
           value: ${TWITTER_CONSUMER_KEY}
