@@ -73,4 +73,5 @@ deploy-to-cluster:
         server: $KUBERNETES_MASTER
         token: $KUBERNETES_TOKEN
         insecure-skip-tls-verify: true
+        raw-global-args: --namespace=$KUBERNETES_NAMESPACE
         command: apply -f kubernetes.yml
