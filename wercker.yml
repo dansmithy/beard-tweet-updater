@@ -52,7 +52,7 @@ build-image:
           crontab -l | { cat; echo "*/1 * * * * /beard-tweet-updater"; } | crontab -
 
     - internal/docker-push:
-        repository: wcr.io/dansmithy/beard-tweet-updater
+        repository: wcr.io/${WERCKER_APPLICATION_OWNER_NAME}/beard-tweet-updater
         tag: $WERCKER_GIT_BRANCH-$WERCKER_GIT_COMMIT,$WERCKER_GIT_COMMIT,latest
         cmd: /usr/sbin/crond -f
 
