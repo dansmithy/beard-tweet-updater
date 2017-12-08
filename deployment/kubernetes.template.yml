@@ -4,7 +4,7 @@ metadata:
   name: beard-volume-claim
 spec:
   storageClassName: "oci"
-  selector: 
+  selector:
     matchLabels:
       oci-availability-domain: "US-ASHBURN-AD-1"
   accessModes:

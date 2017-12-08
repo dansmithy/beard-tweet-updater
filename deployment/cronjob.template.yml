@@ -1,0 +1,22 @@
+---
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: beard-tweet-updater
+spec:
+  schedule: "*/1 * * * *"
+  concurrencyPolicy: Forbid
+  failedJobsHistoryLimit: 5
+  suspend: ${GEN_SUSPEND_JOB:-false}
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          imagePullSecrets:
+          - name: wercker
+          containers:
+            - name: beard-tweet-updater
+              image: wcr.io/${WERCKER_APPLICATION_OWNER_NAME}/beard-tweet-updater
+              args:
+                - ./beard-tweet-updater
+          restartPolicy: Never
