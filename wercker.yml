@@ -69,10 +69,10 @@ deploy-to-cluster:
         code: |
           rm *.template.yml
           cat *.yml | tee beard-tweet-updater.yml
-          cp beard-tweet-updater.yml $WERCKER_REPORT_ARTIFACTS_DIR/
 
     - script:
         name: "Visualise Kubernetes config"
+        cwd: deployment
         code: cat beard-tweet-updater.yml
 
     - kubectl:
