@@ -17,6 +17,6 @@ spec:
           containers:
             - name: beard-tweet-updater
               image: wcr.io/${WERCKER_APPLICATION_OWNER_NAME}/beard-tweet-updater
-              args:
-                - ./beard-tweet-updater
+              command:
+                - /beard-tweet-updater
           restartPolicy: Never
