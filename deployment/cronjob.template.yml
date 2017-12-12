@@ -16,7 +16,20 @@ spec:
           - name: wercker
           containers:
             - name: beard-tweet-updater
-              image: wcr.io/${WERCKER_APPLICATION_OWNER_NAME}/beard-tweet-updater
+              image:  wcr.io/${WERCKER_APPLICATION_OWNER_NAME}/beard-tweet-updater:${WERCKER_GIT_BRANCH}-${WERCKER_GIT_COMMIT}
               command:
                 - /beard-tweet-updater
+              env:
+              - name: TWITTER_CONSUMER_KEY
+                value: ${TWITTER_CONSUMER_KEY}
+              - name: TWITTER_CONSUMER_SECRET
+                value: ${TWITTER_CONSUMER_SECRET}
+              imagePullPolicy: Always
+              volumeMounts:
+              - name: beard-tweet-storage
+                mountPath: /appdata
+          volumes:
+            - name: beard-tweet-storage
+              persistentVolumeClaim:
+                 claimName: beard-volume-claim
           restartPolicy: Never

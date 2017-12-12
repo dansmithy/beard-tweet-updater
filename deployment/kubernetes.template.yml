@@ -13,39 +13,3 @@ spec:
   resources:
     requests:
       storage: 50Gi
----
-apiVersion: extensions/v1beta1
-kind: Deployment
-metadata:
-  name: beard-tweet-updater
-  labels:
-    commit: ${WERCKER_GIT_COMMIT}
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: beard-tweet-updater
-  template:
-    metadata:
-      labels:
-        app: beard-tweet-updater
-        commit: ${WERCKER_GIT_COMMIT}
-    spec:
-      containers:
-      - name: beard-tweet-updater
-        image: wcr.io/${WERCKER_APPLICATION_OWNER_NAME}/beard-tweet-updater:${WERCKER_GIT_BRANCH}-${WERCKER_GIT_COMMIT}
-        env:
-        - name: TWITTER_CONSUMER_KEY
-          value: ${TWITTER_CONSUMER_KEY}
-        - name: TWITTER_CONSUMER_SECRET
-          value: ${TWITTER_CONSUMER_SECRET}
-        imagePullPolicy: Always
-        volumeMounts:
-        - name: beard-tweet-storage
-          mountPath: /appdata
-      imagePullSecrets:
-        - name: wercker
-      volumes:
-        - name: beard-tweet-storage
-          persistentVolumeClaim:
-            claimName: beard-volume-claim
