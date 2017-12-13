@@ -20,8 +20,8 @@ build:
     - golint:
         exclude: "vendor"
     - script:
-        name: preserve kubernetes.template.yml
-        code: cp kubernetes.template.yml $WERCKER_OUTPUT_DIR/kubernetes.template.yml    
+        name: preserve *.template.yml which are in the deployment folder
+        code: cp -r deployment $WERCKER_OUTPUT_DIR/deployment
     - script:
         name: go build
         code: |
@@ -47,14 +47,12 @@ build-image:
         code: mv ./beard-tweet-updater /beard-tweet-updater
 
     - script:
-        name: crontab
-        code: |
-          crontab -l | { cat; echo "*/1 * * * * /beard-tweet-updater"; } | crontab -
+        name: forward deployment scripts
+        code: cp -r deployment $WERCKER_OUTPUT_DIR/deployment
 
     - internal/docker-push:
         repository: wcr.io/${WERCKER_APPLICATION_OWNER_NAME}/beard-tweet-updater
         tag: $WERCKER_GIT_BRANCH-$WERCKER_GIT_COMMIT,$WERCKER_GIT_COMMIT,latest
-        cmd: /usr/sbin/crond -f
 
 deploy-to-cluster:
     box:
@@ -62,16 +60,26 @@ deploy-to-cluster:
         cmd: /bin/sh
     steps:
 
-    - bash-template
+    - bash-template:
+        cwd: deployment
+
+    - script:
+        name: merge kubernetes files
+        cwd: deployment
+        code: |
+          rm *.template.yml
+          cat *.yml | tee beard-tweet-updater.yml
 
     - script:
         name: "Visualise Kubernetes config"
-        code: cat kubernetes.yml
+        cwd: deployment
+        code: cat beard-tweet-updater.yml
 
     - kubectl:
         name: deploy to kubernetes
+        cwd: deployment
         server: $KUBERNETES_MASTER
         token: $KUBERNETES_TOKEN
         insecure-skip-tls-verify: true
         raw-global-args: --namespace=$KUBERNETES_NAMESPACE
-        command: apply -f kubernetes.yml
+        command: apply -f beard-tweet-updater.yml
